@@ -376,6 +376,7 @@ weather_data_config = {
 		prepare_func=prepare_month_surface_flux,
 		template=os.path.join(merra2_dir, '{year}/MERRA2_*.tavgM_2d_flx_Nx.*.nc4'),
 	    url = 'https://goldsmr4.gesdisc.eosdis.nasa.gov/data/MERRA2_MONTHLY/M2TMNXFLX.5.12.4/{year}/MERRA2_{spinup}.tavgM_2d_flx_Nx.{year}{month:0>2}.nc4',
+	    url_opendap = 'https://goldsmr4.gesdisc.eosdis.nasa.gov/opendap/MERRA2_MONTHLY/M2TMNXFLX.5.12.4/{year}/MERRA2_{spinup}.tavgM_2d_flx_Nx.{year}{month:0>2}.nc4.nc4',
 		fn = os.path.join(merra2_dir, '{year}/MERRA2_{spinup}.tavgM_2d_flx_Nx.{year}{month:0>2}.nc4'),
 		variables = ['ustar','z0m','disph','rhoa','ulml','vlml','tstar','hlml','tlml','pblh','hflux','eflux']
 	),
@@ -387,6 +388,7 @@ weather_data_config = {
 		prepare_func=prepare_dailymeans_surface_flux,
 		template=os.path.join(merra2_dir, '{year}/{month:0>2}/MERRA2_*.statD_2d_slv_Nx.*.nc4'),
 	    url = 'https://goldsmr4.gesdisc.eosdis.nasa.gov/data/MERRA2/M2SDNXSLV.5.12.4/{year}/{month:0>2}/MERRA2_{spinup}.statD_2d_slv_Nx.{year}{month:0>2}{day:0>2}.nc4',
+	    url_opendap = 'https://goldsmr4.gesdisc.eosdis.nasa.gov/opendap/MERRA2/M2SDNXSLV.5.12.4/{year}/{month:0>2}/MERRA2_{spinup}.statD_2d_slv_Nx.{year}{month:0>2}{day:0>2}.nc4.nc4',
 		fn = os.path.join(merra2_dir, '{year}/{month:0>2}/MERRA2_{spinup}.statD_2d_slv_Nx.{year}{month:0>2}{day:0>2}.nc4'),
 		variables = ['hournorain', 'tprecmax', 't2mmax', 't2mmean', 't2mmin']
 	),
@@ -400,6 +402,10 @@ weather_data_config = {
 	    url = [
 			'https://goldsmr4.gesdisc.eosdis.nasa.gov/data/MERRA2/M2T1NXSLV.5.12.4/{year}/{month:0>2}/MERRA2_{spinup}.tavg1_2d_slv_Nx.{year}{month:0>2}{day:0>2}.nc4',
 			'https://goldsmr4.gesdisc.eosdis.nasa.gov/data/MERRA2/M2T1NXRAD.5.12.4/{year}/{month:0>2}/MERRA2_{spinup}.tavg1_2d_rad_Nx.{year}{month:0>2}{day:0>2}.nc4'
+		],
+	    url_opendap = [
+			'https://goldsmr4.gesdisc.eosdis.nasa.gov/opendap/MERRA2/M2T1NXSLV.5.12.4/{year}/{month:0>2}/MERRA2_{spinup}.tavg1_2d_slv_Nx.{year}{month:0>2}{day:0>2}.nc4.nc4',
+			'https://goldsmr4.gesdisc.eosdis.nasa.gov/opendap/MERRA2/M2T1NXRAD.5.12.4/{year}/{month:0>2}/MERRA2_{spinup}.tavg1_2d_rad_Nx.{year}{month:0>2}{day:0>2}.nc4.nc4'
 		],
 		fn = os.path.join(merra2_dir, '{year}/{month:0>2}/MERRA2_{spinup}.tavg1_2d_slv_rad_Nx.{year}{month:0>2}{day:0>2}.nc4'),
 		variables = ['albedo', 'swgdn', 'swtdn', 't2m']
@@ -415,6 +421,10 @@ weather_data_config = {
 			'https://goldsmr4.gesdisc.eosdis.nasa.gov/data/MERRA2_MONTHLY/M2TMNXSLV.5.12.4/{year}/MERRA2_{spinup}.tavgM_2d_slv_Nx.{year}{month:0>2}.nc4',
 			'https://goldsmr4.gesdisc.eosdis.nasa.gov/data/MERRA2_MONTHLY/M2TMNXRAD.5.12.4/{year}/MERRA2_{spinup}.tavgM_2d_rad_Nx.{year}{month:0>2}.nc4'
 		],
+	    url_opendap = [
+			'https://goldsmr4.gesdisc.eosdis.nasa.gov/opendap/hyrax/MERRA2_MONTHLY/M2TMNXSLV.5.12.4/{year}/MERRA2_{spinup}.tavgM_2d_slv_Nx.{year}{month:0>2}.nc4.nc4',
+			'https://goldsmr4.gesdisc.eosdis.nasa.gov/opendap/hyrax/MERRA2_MONTHLY/M2TMNXRAD.5.12.4/{year}/MERRA2_{spinup}.tavgM_2d_rad_Nx.{year}{month:0>2}.nc4.nc4'
+		],
 		fn = os.path.join(merra2_dir, '{year}/MERRA2_{spinup}.tavgM_2d_slv_rad_Nx.{year}{month:0>2}.nc4'),
 		variables = ['albedo', 'swgdn', 'swtdn', 't2m']
 	),
@@ -426,6 +436,7 @@ weather_data_config = {
 		prepare_func=prepare_month_aerosol,
 		template=os.path.join(merra2_dir, '{year}/{month:0>2}/MERRA2_*.tavg1_2d_aer_Nx.*.nc4'),
 	    url = 'https://goldsmr4.gesdisc.eosdis.nasa.gov/data/MERRA2/M2T1NXAER.5.12.4/{year}/{month:0>2}/MERRA2_{spinup}.tavg1_2d_aer_Nx.{year}{month:0>2}{day:0>2}.nc4',
+	    url_opendap = 'https://goldsmr4.gesdisc.eosdis.nasa.gov/opendap/MERRA2/M2T1NXAER.5.12.4/{year}/{month:0>2}/MERRA2_{spinup}.tavg1_2d_aer_Nx.{year}{month:0>2}{day:0>2}.nc4.nc4',
 		fn = os.path.join(merra2_dir, '{year}/{month:0>2}/MERRA2_{spinup}.tavg1_2d_aer_Nx.{year}{month:0>2}{day:0>2}.nc4'),
 		variables = ['bcsmass', 'dusmass25', 'ocsmass', 'so4smass', 'sssmass25']
 	)
