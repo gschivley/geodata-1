@@ -2,10 +2,7 @@
 
 A short guide to downloading ERA5 data from the [Copernicus Data Store](https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-single-levels?tab=overview).
 
-## Download using the geodata package itself
-
-Downloading ERA5 data and creating ERA5-based cutouts can be achieved in the same step.
-
+## Download data using geodata
 
 To start, import the required dependencies:
 
@@ -17,6 +14,29 @@ import geodata
 
 `import geodata` is required to use **geodata**, while launching a logger allows for detailed debugging via the console.
 
+
+```
+DS_monthly = geodata.Dataset(module="era5",
+					 years=slice(2015, 2015),
+					 months=slice(1,12),
+           weather_data_config = "wind_solar_monthly")
+```
+
+If the specified dataset does not yet exist, this will return the number of files left to download. You may optionally pass a `bounds` parameter to download a geographic subset of data (default is the entire world).
+
+The data download can be initiated via the `get_data()` command:
+
+```
+if DS_monthly.prepared == False:
+	DS_monthly.get_data()
+```
+
+Depending on your specified time range and internet connection speed, this step could take several minutes or even hours.
+
+**Note: the ERA5 API frequently has long queues as requests are processed, with relatively rapid download rates once download commences. To save you time (and the ERA5 servers multiple requests), we recommend downloading the largest geographic bounds you may want.**
+
+
+
 ## Preparing the cutout
 
 A cutout is the basis for any data or analysis output by the **geodata** package.  Cutouts are stored in the directory `cutout_dir` configured in `config.py` (to set up `config.py`, [see here](https://github.com/east-winds/geodata/blob/master/doc/general/packagesetup.md)).
@@ -24,7 +44,7 @@ A cutout is the basis for any data or analysis output by the **geodata** package
 ```
 cutout = geodata.Cutout(name="era5-europe-test-2011-01",
                        module="era5",
-                       weather_data_config="era5_monthly",
+                       weather_data_config="wind_solar_monthly",
                        xs=slice(30, 41.56244222),
                        ys=slice(33.56459975, 35),
                        years=slice(2011, 2011),
@@ -59,25 +79,6 @@ The **geodata** package will create a folder in the cutout directory (`cutout_di
 
 To actually create the cutout, you must run `cutout.prepare()`.  Upon running `cutout.prepare()`, **geodata** will check for the presence of the cutout and abort if the cutout already exists.  If you want to force the regeneration of a cutout, run the command with the parameter `overwrite=True`.
 
-
-### Notes on Downloading ERA5 data
-
-If the specified cutout does not yet exist, or if `overwrite=True` is specified in `cutout.prepare()`, **geodata** will initiate data download.  Depending on your specified time range and internet connection speed, this step could take several minutes or even hours.
-
-
-If downloaded through `cutout.prepare()`, ERA5 data will download with the following variables:
-
-* temperature: 2 metre temperature (K)
-* runoff
-* soil temperature: Soil temperature level 4 (K)
-* pressure: Surface pressure (Pa)
-* influx_toa (W m**-2)
-* influx_direct (W m**-2)
-* roughness: Forecast surface roughness (m)
-* albedo (0-1)
-* influx_diffuse (W m**-2)
-* wnd100m (100 metre wind speed) 
-* height
 
 
 ## Cutout Metadata

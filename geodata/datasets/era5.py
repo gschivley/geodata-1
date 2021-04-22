@@ -31,6 +31,7 @@ from six.moves import range
 from requests.exceptions import HTTPError
 from contextlib import contextmanager
 from tempfile import mkstemp
+from collections import defaultdict
 import logging
 logger = logging.getLogger(__name__)
 
@@ -173,67 +174,23 @@ def api_hourly_era5(
 	product,
 	product_type
 	):
-	if not has_cdsapi:
-		raise RuntimeError(
-					"Need installed cdsapi python package available from "
-					"https://cds.climate.copernicus.eu/api-how-to"
-				)
 
-	if len(toDownload) == 0:
-		logger.info("All ERA5 files for this dataset have been downloaded.")
-	else:
-		logger.info("Preparing to download " + str(len(toDownload)) + " files.")
-
-		for f in toDownload:
-			print(f)
-			os.makedirs(os.path.dirname(f[1]), exist_ok=True)
-
-			fd, target = mkstemp(suffix='.nc4')
-			fd2, target2 = mkstemp(suffix='.nc4')
-
-			## for each file in self.todownload - need to then reextract year month in order to make query
-			query_year = str(f[2])
-			query_month = str(f[3]) if len(str(f[3])) == 2 else '0' + str(f[3])
-
-			#2. Full data file
-			full_request = {
-				'product_type':'reanalysis',
-				'format':'netcdf',
-				'year':query_year,
-				'month':query_month,
-				'day':[
-					'01','02','03','04','05','06','07','08','09','10','11','12',
-					'13','14','15','16','17','18','19','20','21','22','23','24',
-					'25','26','27','28','29','30','31'
-				],
-				'time':[
-					'00:00','01:00','02:00','03:00','04:00','05:00',
-					'06:00','07:00','08:00','09:00','10:00','11:00',
-					'12:00','13:00','14:00','15:00','16:00','17:00',
-					'18:00','19:00','20:00','21:00','22:00','23:00'
-				],
-				'variable': download_vars
-			}
-
-			if bounds != None:
-				full_request['area'] = bounds
-
-			full_result = cdsapi.Client().retrieve(
-				product,
-				full_request
-			)
-
-			logger.info("Downloading metadata request for {} variables to {}".format(len(full_request['variable']), f))
-			full_result.download(f[1])
-			logger.info("Successfully downloaded to {}".format(f[1]))
+	api_monthly_era5(toDownload,
+		bounds,
+		download_vars,
+		product,
+		product_type,
+		hourly = True)
 
 def api_monthly_era5(
 	toDownload,
 	bounds,
 	download_vars,
 	product,
-	product_type
+	product_type,
+	**kwargs
 	):
+
 	if not has_cdsapi:
 		raise RuntimeError(
 					"Need installed cdsapi python package available from "
@@ -245,38 +202,66 @@ def api_monthly_era5(
 	else:
 		logger.info("Preparing to download " + str(len(toDownload)) + " files.")
 
+		# Collect all months from each year into single requests
+		#	this saves time when queuing with the CDSAPI server
+		toDownloadSorted = defaultdict(list)
+		toDownloadMonths = defaultdict(list)
+		toDownloadMonthsInt = defaultdict(list)
 		for f in toDownload:
-			print(f)
-			os.makedirs(os.path.dirname(f[1]), exist_ok=True)
+			toDownloadSorted[str(f[2])].append(f)
+			toDownloadMonths[str(f[2])].append("{:0>2}".format(f[3]))
+			toDownloadMonthsInt[str(f[2])].append(f[3])
 
+		for f_year in toDownloadMonths:
+			print(f_year)
+
+			# Save annual download to temp file
 			fd, target = mkstemp(suffix='.nc4')
-			fd2, target2 = mkstemp(suffix='.nc4')
-
-			## for each file in self.todownload - need to then reextract year month in order to make query
-			query_year = str(f[2])
-			query_month = str(f[3]) if len(str(f[3])) == 2 else '0' + str(f[3])
 
 			#2. Full data file
 			full_request = {
 				'product_type':product_type,
 				'format':'netcdf',
-				'year':query_year,
-				'month':query_month,
-				'time':'00:00',
+				'year':f_year,
+				'month':toDownloadMonths[f_year],
 				'variable': download_vars
 			}
 
 			if bounds != None:
 				full_request['area'] = bounds
 
+			if 'hourly' in kwargs and kwargs['hourly']:
+				full_request['day'] = [
+					'01','02','03','04','05','06','07','08','09','10','11','12',
+					'13','14','15','16','17','18','19','20','21','22','23','24',
+					'25','26','27','28','29','30','31'
+				]
+				full_request['time'] = [
+					'00:00','01:00','02:00','03:00','04:00','05:00',
+					'06:00','07:00','08:00','09:00','10:00','11:00',
+					'12:00','13:00','14:00','15:00','16:00','17:00',
+					'18:00','19:00','20:00','21:00','22:00','23:00'
+				]
+			else:
+				full_request['time'] = '00:00'
+
+			logger.info(full_request)
 			full_result = cdsapi.Client().retrieve(
 				product,
 				full_request
 			)
 
-			logger.info("Downloading metadata request for {} variables to {}".format(len(full_request['variable']), f))
-			full_result.download(f[1])
-			logger.info("Successfully downloaded to {}".format(f[1]))
+			logger.info("Downloading metadata request for {} variables".format(len(full_request['variable'])))
+			full_result.download(target)
+			logger.info("Successfully downloaded. Saving to individual monthly files.")
+
+			# Save to individual monthly files
+			with xr.open_dataset(target) as ds:
+				for i in range(len(toDownloadMonthsInt[f_year])):
+					ds_mo = ds.where(ds['time.month'] == toDownloadMonthsInt[f_year][i], drop=True)
+					logger.info(toDownloadSorted[f_year][i])
+					os.makedirs(os.path.dirname(toDownloadSorted[f_year][i][1]), exist_ok=True)
+					ds_mo.to_netcdf(toDownloadSorted[f_year][i][1])
 
 
 
@@ -397,6 +382,8 @@ def prepare_month_era5(fn, year, month, xs, ys):
 		ds = ds.drop(['ssrd', 'ssr'])
 
 		# Convert from energy to power J m**-2 -> W m**-2 and clip negative fluxes
+
+# TODO: Check whether daily or hourly accumulation -> divide by 3600*24 or by 3600
 		for a in ('influx_direct', 'influx_diffuse', 'influx_toa'):
 			ds[a] = ds[a].clip(min=0.) / (60.*60.)
 			ds[a].attrs['units'] = 'W m**-2'

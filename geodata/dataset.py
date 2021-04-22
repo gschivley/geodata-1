@@ -155,12 +155,20 @@ class Dataset(object):
 						if check_complete:
 							logger.info("File `%s` not found!", filename)
 							incomplete_count += 1
-						self.toDownload.append((
-							self.config,
-							filename,
-							self.datasetfn(self.weatherconfig['url'][0], yr, mo, day),
-							self.datasetfn(self.weatherconfig['url'][1], yr, mo, day)
-							))
+						if opendap:
+							self.toDownload.append((
+								self.config,
+								filename,
+								self.datasetfn_opendap(self.weatherconfig['url_opendap'][0], self.weatherconfig['variables'], yr, mo, day),
+								self.datasetfn_opendap(self.weatherconfig['url_opendap'][1], self.weatherconfig['variables'], yr, mo, day)
+								))
+						else:
+							self.toDownload.append((
+								self.config,
+								filename,
+								self.datasetfn(self.weatherconfig['url'][0], yr, mo, day),
+								self.datasetfn(self.weatherconfig['url'][1], yr, mo, day)
+								))
 					else:
 						self.downloadedFiles.append((self.config, filename))
 
@@ -178,6 +186,9 @@ class Dataset(object):
 						incomplete_count += 1
 					if self.module == 'era5':
 						self.toDownload.append((self.config, filename, yr, mo))
+					elif opendap:
+						self.toDownload.append((self.config, filename,
+								self.datasetfn_opendap(self.weatherconfig['url_opendap'], self.weatherconfig['variables'], yr, mo)))
 					else:
 						self.toDownload.append((self.config, filename, self.datasetfn(self.weatherconfig['url'], yr, mo)))
 				else:
@@ -194,12 +205,20 @@ class Dataset(object):
 					if check_complete:
 						logger.info("File `%s` not found!", filename)
 						incomplete_count += 1
-					self.toDownload.append((
-						self.config,
-						filename,
-						self.datasetfn(self.weatherconfig['url'][0], yr, mo),
-						self.datasetfn(self.weatherconfig['url'][1], yr, mo)
-						))
+					if opendap:
+						self.toDownload.append((
+							self.config,
+							filename,
+							self.datasetfn_opendap(self.weatherconfig['url_opendap'][0], self.weatherconfig['variables'], yr, mo),
+							self.datasetfn_opendap(self.weatherconfig['url_opendap'][1], self.weatherconfig['variables'], yr, mo)
+							))
+					else:
+						self.toDownload.append((
+							self.config,
+							filename,
+							self.datasetfn(self.weatherconfig['url'][0], yr, mo),
+							self.datasetfn(self.weatherconfig['url'][1], yr, mo)
+							))
 				else:
 					self.downloadedFiles.append((self.config, filename))
 
